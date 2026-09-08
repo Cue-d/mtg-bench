@@ -3,7 +3,10 @@ name = "mtgbench-dataroom"
 version = "0.1.0"
 description = "Prototype harnesses and smokes for MTG agent benchmarking."
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "mcp>=1.0,<2",
+    "websocket-client>=1.8,<2",
+]
 
 [dependency-groups]
 dev = [
