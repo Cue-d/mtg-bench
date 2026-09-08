@@ -76,7 +76,7 @@ Opening hands use the same tool with protocol messages instead:
 ## Complete enum and parameter references
 
 The exact, versioned source contracts live in the bundled upstream checkout
-`05_evidence/repos/argentum-engine/`. Read these on demand for uncommon parameters;
+`evidence/repos/argentum-engine/`. Read these on demand for uncommon parameters;
 they are the canonical definitions, not a second handwritten schema:
 
 - `web-client/src/types/actions.ts`: action union, costs, targets, decision responses.

@@ -19,16 +19,16 @@ engine once:
 
 ```bash
 uv sync --locked
-mkdir -p 05_evidence/repos
-git clone https://github.com/wingedsheep/argentum-engine.git 05_evidence/repos/argentum-engine
-git -C 05_evidence/repos/argentum-engine checkout --detach d812e2a418a9fba8f6a9b24c4582d338e0296405
-npm --prefix 05_evidence/repos/argentum-engine/web-client ci
+mkdir -p evidence/repos
+git clone https://github.com/wingedsheep/argentum-engine.git evidence/repos/argentum-engine
+git -C evidence/repos/argentum-engine checkout --detach d812e2a418a9fba8f6a9b24c4582d338e0296405
+npm --prefix evidence/repos/argentum-engine/web-client ci
 ```
 
 Keep the engine running in one terminal:
 
 ```bash
-cd 05_evidence/repos/argentum-engine
+cd evidence/repos/argentum-engine
 just server
 ```
 
@@ -39,7 +39,7 @@ The game server listens on port 8080. This bridge does not use `gym-server`.
 Keep the existing UI running in another terminal:
 
 ```bash
-npm --prefix 05_evidence/repos/argentum-engine/web-client run dev -- --host 127.0.0.1
+npm --prefix evidence/repos/argentum-engine/web-client run dev -- --host 127.0.0.1
 ```
 
 ## Play
