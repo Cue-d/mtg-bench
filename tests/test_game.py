@@ -1,15 +1,76 @@
-"""Run with ARGENTUM_LIVE=1 against the local game-server."""
+"""Offline bridge checks; opt into engine/Codex integration with ARGENTUM_* flags."""
 import json
 import os
 from pathlib import Path
 import subprocess
+import threading
+from types import SimpleNamespace
 import urllib.request
 
 import pytest
 
 from game import Game, codex_command, traced
-from types import SimpleNamespace
-import threading
+
+
+@pytest.fixture
+def player():
+    game = Game.__new__(Game)
+    game.player_id = "self"
+    game.view = {"interactionEpoch": 4}
+    game._submit = lambda message, revision: (message, revision)
+    return game
+
+
+def test_action_preserves_backend_parameters_and_excludes_explanation(player):
+    action = {"type": "CastSpell", "playerId": "self", "cardId": "spell", "xValue": 3,
+              "targets": [{"type": "Player", "playerId": "other"}]}
+    message, revision = player.act(action, 7, "Cast for three")
+    assert message["action"] == action
+    assert message["interactionEpoch"] == 4
+    assert message["messageId"]
+    assert revision == 7
+    assert "explanation" not in message
+
+
+def test_action_rejects_other_seat_and_decision_bypass(player):
+    with pytest.raises(ValueError, match="playerId"):
+        player.act({"type": "PassPriority", "playerId": "other"}, 1)
+    with pytest.raises(ValueError, match="resolve_decision"):
+        player.act({"type": "SubmitDecision", "playerId": "self"}, 1)
+
+
+def test_decision_requires_current_id_and_preserves_response(player):
+    player.view["pendingDecision"] = {"id": "choice"}
+    response = {"type": "CardsSelectedResponse", "decisionId": "choice", "selectedCards": ["card"]}
+    message, revision = player.resolve_decision(response, 7, "Discard this card")
+    assert message["action"] == {"type": "SubmitDecision", "playerId": "self", "response": response}
+    assert revision == 7
+    assert "explanation" not in message
+    with pytest.raises(ValueError, match="decisionId"):
+        player.resolve_decision({**response, "decisionId": "old"}, 7)
+
+
+def test_opening_decisions_use_player_protocol(player):
+    player.view = {"openingDecision": {"type": "mulliganDecision"}}
+    assert player.resolve_decision({"type": "keepHand"}, 1) == ({"type": "keepHand"}, 1)
+    with pytest.raises(ValueError, match="Opening decision"):
+        player.resolve_decision({"type": "chooseBottomCards", "cardIds": []}, 1)
+    player.view = {"openingDecision": {"type": "chooseBottomCards"}}
+    response = {"type": "chooseBottomCards", "cardIds": ["card"]}
+    assert player.resolve_decision(response, 2) == (response, 2)
+
+
+def test_stale_or_dirty_submission_never_sends(player):
+    player.operation = threading.Lock()
+    player.changed = threading.Condition()
+    player.failure = None
+    player.revision = 7
+    player.dirty = False
+    with pytest.raises(ValueError, match="Stale"):
+        Game._submit(player, {}, 6)
+    player.dirty = True
+    with pytest.raises(ValueError, match="Stale"):
+        Game._submit(player, {}, 7)
 
 
 def test_trace_preserves_result_and_logs_errors(tmp_path):

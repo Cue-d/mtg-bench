@@ -4,7 +4,7 @@
 __pycache__/
 *.py[cod]
 
-# Large local evidence checkouts are reproducible from source_ledger.csv.
+# Unmodified upstream checkouts; see README.md for the pinned engine setup.
 05_evidence/repos/
 
 # Local run output that should not be committed by default.
