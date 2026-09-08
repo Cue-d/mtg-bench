@@ -1,5 +1,5 @@
 [project]
-name = "mtgbench-dataroom"
+name = "mtg-bench"
 version = "0.1.0"
 description = "Four player-scoped tools for agents playing Magic through Argentum."
 requires-python = ">=3.11"

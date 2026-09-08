@@ -1,4 +1,4 @@
-# Magic agent tools
+# mtg-bench
 
 One Python file, four player-scoped tools, and an unmodified Argentum engine.
 [`game.py`](game.py) exposes `observe`, `legal_actions`, `act`, and
